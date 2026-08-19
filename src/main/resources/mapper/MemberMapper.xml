@@ -12,7 +12,7 @@
     </select>
 
     <select id="findByLoginId" resultType="com.sungyoung.authlab.member.dto.MemberDto">
-        SELECT id, login_id, name, role
+        SELECT id, login_id, password, name, role
         FROM member
         WHERE login_id = #{loginId}
     </select>
