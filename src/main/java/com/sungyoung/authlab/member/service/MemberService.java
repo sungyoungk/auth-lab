@@ -1,8 +1,11 @@
 package com.sungyoung.authlab.member.service;
 
+import com.sungyoung.authlab.auth.dto.SignupRequest;
+import com.sungyoung.authlab.common.config.PasswordEncoderConfig;
 import com.sungyoung.authlab.member.dto.MemberDto;
 import com.sungyoung.authlab.member.mapper.MemberMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -10,8 +13,24 @@ import org.springframework.stereotype.Service;
 public class MemberService {
 
     private final MemberMapper memberMapper;
+    private final PasswordEncoder passwordEncoder;
 
     public MemberDto findById(Long id) {
         return memberMapper.findById(id);
+    }
+
+    public void signup(SignupRequest request) {
+        MemberDto existing = memberMapper.findByLoginId(request.getLoginId());
+        if(existing != null) {
+            throw new IllegalArgumentException("이미 사용중인 아이디 입니다.");
+        }
+
+        MemberDto member = new MemberDto();
+        member.setLoginId(request.getLoginId());
+        member.setName(request.getName());
+        member.setPassword(passwordEncoder.encode(request.getPassword()));
+        member.setRole("USER");
+
+        memberMapper.insert(member);
     }
 }

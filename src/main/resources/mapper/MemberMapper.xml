@@ -6,12 +6,20 @@
 
     <select id="findById" resultType="com.sungyoung.authlab.member.dto.MemberDto">
         SELECT
-            id,
-            login_id,
-            name,
-            role
+            id, login_id, name, role
         FROM member
         WHERE id = #{id}
     </select>
+
+    <select id="findByLoginId" resultType="com.sungyoung.authlab.member.dto.MemberDto">
+        SELECT id, login_id, name, role
+        FROM member
+        WHERE login_id = #{loginId}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO member (login_id, password, name, role)
+        VALUES (#{loginId}, #{password}, #{name}, #{role})
+    </insert>
 
 </mapper>

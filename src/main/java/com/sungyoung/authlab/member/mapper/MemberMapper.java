@@ -5,5 +5,12 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface MemberMapper {
+
     MemberDto findById(Long id);
+
+    MemberDto findByLoginId(String loginId);
+
+    int insert(MemberDto memberDto);
+
+
 }
