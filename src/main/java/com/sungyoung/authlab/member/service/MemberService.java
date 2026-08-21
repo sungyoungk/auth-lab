@@ -1,7 +1,9 @@
 package com.sungyoung.authlab.member.service;
 
 import com.sungyoung.authlab.auth.dto.LoginRequest;
+import com.sungyoung.authlab.auth.dto.LoginResponse;
 import com.sungyoung.authlab.auth.dto.SignupRequest;
+import com.sungyoung.authlab.auth.jwt.JwtProvider;
 import com.sungyoung.authlab.common.config.PasswordEncoderConfig;
 import com.sungyoung.authlab.member.dto.MemberDto;
 import com.sungyoung.authlab.member.mapper.MemberMapper;
@@ -16,6 +18,7 @@ public class MemberService {
 
     private final MemberMapper memberMapper;
     private final PasswordEncoder passwordEncoder;
+    private final JwtProvider jwtProvider;
 
     public MemberDto findById(Long id) {
         return memberMapper.findById(id);
@@ -36,7 +39,7 @@ public class MemberService {
         memberMapper.insert(member);
     }
 
-    public void login(LoginRequest request, HttpSession session) {
+    public LoginResponse login(LoginRequest request) {
         MemberDto member = memberMapper.findByLoginId(request.getLoginId());
         if(member == null) {
             throw new IllegalArgumentException("아이디 또는 비밀번호가 올바르지 않습니다");
@@ -46,7 +49,7 @@ public class MemberService {
             throw new IllegalArgumentException("아이디 또는 비밀번호가 올바르지 않습니다");
         }
 
-        session.setAttribute("memberId", member.getId());
-        session.setAttribute("role", member.getRole());
+        String token = jwtProvider.createAccessToken(member.getId(), member.getRole());
+        return new LoginResponse(token);
     }
 }

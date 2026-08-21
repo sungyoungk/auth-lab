@@ -1,8 +1,10 @@
 package com.sungyoung.authlab.auth.controller;
 
 import com.sungyoung.authlab.auth.dto.LoginRequest;
+import com.sungyoung.authlab.auth.dto.LoginResponse;
 import com.sungyoung.authlab.auth.dto.SignupRequest;
 import com.sungyoung.authlab.member.service.MemberService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -23,18 +25,18 @@ public class AuthController {
     }
 
     @PostMapping("/api/auth/login")
-    public void login(@Valid @RequestBody LoginRequest request, HttpSession session) {
-        memberService.login(request, session);
+    public LoginResponse login(@Valid @RequestBody LoginRequest request) {
+        return memberService.login(request);
     }
-
+/*
     @PostMapping("/api/auth/logout")
     public void logout(HttpSession session) {
         session.invalidate();
     }
-
+*/
     @GetMapping("/api/admin/ping") // 인가
-    public String ping(HttpSession session, HttpServletResponse response) {
-        String role = (String)session.getAttribute("role");
+    public String ping(HttpServletRequest request, HttpServletResponse response) {
+        String role = (String)request.getAttribute("role");
         if(!"ADMIN".equals(role)) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN); //403
             return null;

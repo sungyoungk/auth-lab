@@ -2,6 +2,7 @@ package com.sungyoung.authlab.member.controller;
 
 import com.sungyoung.authlab.member.dto.MemberDto;
 import com.sungyoung.authlab.member.service.MemberService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,8 +21,8 @@ public class MemberController {
 
 
     @GetMapping("/api/members/me")
-    public MemberDto me(HttpSession session) {
-        Long memberId = (Long)session.getAttribute("memberId");
+    public MemberDto me(HttpServletRequest request) {
+        Long memberId = (Long)request.getAttribute("memberId");
         return memberService.findById(memberId);
     }
 
