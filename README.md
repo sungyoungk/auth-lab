@@ -111,9 +111,10 @@ mybatis:
 | 3 | 인터셉터 인증 + role 인가 | [x] |
 | 4 | Postman 전체 흐름 검증 | [x] |
 | 5 | JWT Access Token | [x] |
-| 6 | Refresh Token (재발급 / 로그아웃) | [~] 핵심 검증 완료 |
+| 6 | Refresh Token (재발급 / 로그아웃) | [x] |
+| B | 비밀번호 변경 | [x] |
 
-**현재 위치**: Step 6 — Refresh Token 핵심 시나리오 완료 (로테이션/로그아웃 추가 검증 권장)
+**현재 위치**: Step 6 완료 — 다음 후보: Spring Security 리팩터링
 
 ### Step 6 세부 체크
 
@@ -121,8 +122,8 @@ mybatis:
 - [x] Access로 `/api/members/me` → 200
 - [x] Access 만료 후 `/me` → 401
 - [x] `POST /api/auth/refresh`로 새 Access 발급
-- [ ] 예전 refresh로 재호출 → 실패 (로테이션)
-- [ ] `POST /api/auth/logout` 후 해당 refresh 재사용 불가
+- [x] 예전 refresh로 재호출 → 실패 (로테이션)
+- [x] `POST /api/auth/logout` 후 해당 refresh 재사용 불가
 
 ---
 
@@ -613,7 +614,7 @@ Refresh = 길게, UUID를 DB(refresh_token)에 저장 → 재발급/로그아웃
 - [x] 로그인에 access + refresh
 - [x] 만료 Access → 401
 - [x] refresh로 재발급 성공
-- [ ] 로테이션 / 로그아웃 추가 검증
+- [x] 로테이션 / 로그아웃 검증 완료
 
 ---
 
@@ -670,14 +671,14 @@ flowchart TD
 - [x] Access Token 발급 및 Bearer 인증
 - [x] JWT claim 기반 인가 (role 스냅샷 이해)
 - [x] Access 만료 후 Refresh로 재발급
-- [ ] Refresh 로테이션 / 로그아웃으로 서버 측 무효화 확인
+- [x] Refresh 로테이션 / 로그아웃으로 서버 측 무효화 확인
 
 ---
 
 ## 이후 확장
 
-- [x] Refresh Token (Step 6 — 핵심 완료, 로테이션/로그아웃 추가 검증 권장)
-- [ ] 비밀번호 변경
+- [x] Refresh Token (Step 6 완료)
+- [x] 비밀번호 변경
 - [ ] Remember-me / 자동 로그인
 - [ ] Spring Security로 리팩터링
 - [ ] OAuth2 소셜 로그인 (Google, Kakao 등)
