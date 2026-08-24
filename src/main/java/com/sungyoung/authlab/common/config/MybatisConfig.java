@@ -4,6 +4,8 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@MapperScan("com.sungyoung.authlab.member.mapper")
+@MapperScan({
+        "com.sungyoung.authlab.**.mapper"
+})
 public class MybatisConfig {
 }

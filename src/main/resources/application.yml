@@ -12,4 +12,5 @@ mybatis:
 
 jwt:
   secret: auth-lab-secret-key-must-be-at-least-32-bytes-long!!
-  expiration-ms: 3600000   # 1시간
+  expiration-ms: 60000   # 1분(학습용)
+  refresh-expiration-ms: 1209600000 # Refresh: 14일

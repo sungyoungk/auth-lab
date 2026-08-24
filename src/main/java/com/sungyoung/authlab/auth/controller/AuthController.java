@@ -2,11 +2,11 @@ package com.sungyoung.authlab.auth.controller;
 
 import com.sungyoung.authlab.auth.dto.LoginRequest;
 import com.sungyoung.authlab.auth.dto.LoginResponse;
+import com.sungyoung.authlab.auth.dto.RefreshRequest;
 import com.sungyoung.authlab.auth.dto.SignupRequest;
 import com.sungyoung.authlab.member.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -42,6 +42,16 @@ public class AuthController {
             return null;
         }
         return "pong";
+    }
+
+    @PostMapping("/api/auth/refresh")
+    public LoginResponse refresh(@Valid @RequestBody RefreshRequest request) {
+        return memberService.refresh(request);
+    }
+
+    @PostMapping("/api/auth/logout")
+    public void logout(@Valid @RequestBody RefreshRequest request) {
+        memberService.logout(request);
     }
 
 }

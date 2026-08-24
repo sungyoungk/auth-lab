@@ -19,7 +19,9 @@ public class WebMVCConfig implements WebMvcConfigurer {
                 .addPathPatterns("/api/**")
                 .excludePathPatterns(
                         "/api/auth/sign-up",
-                        "/api/auth/login"
+                        "/api/auth/login",
+                        "/api/auth/refresh",
+                        "/api/auth/logout"
                 );
     }
 
