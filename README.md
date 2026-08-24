@@ -92,7 +92,8 @@ mybatis:
 - **스택**: Spring Boot + MyBatis + **PostgreSQL** (현업과 동일)
 - **0차 목표**: Spring 핵심 개념 (DI, 계층 구조, MyBatis) 실험으로 체득
 - **1차 목표**: 세션 기반 회원가입 / 로그인 / 로그아웃 / 인가
-- **2차 목표**: JWT 방식으로 확장
+- **2차 목표**: JWT Access Token 방식으로 확장
+- **3차 목표**: Refresh Token (재발급 / 로그아웃)
 - **학습 방식**: IntelliJ에서 직접 구현, 막히면 AI 멘토에게 단계별로 질문
 
 ---
@@ -104,14 +105,24 @@ mybatis:
 | Step | 내용 | 상태 |
 |------|------|------|
 | 0 | 프로젝트 생성, DB 연결, 패키지 구조 | [x] |
-| A | Spring 기초 실험 (DI, 계층 구조, MyBatis 흐름) | [ ] |
-| 1 | 회원가입 API (BCrypt) | [ ] |
-| 2 | 로그인 / 로그아웃 (HttpSession) | [ ] |
-| 3 | 인터셉터 인증 + role 인가 | [ ] |
-| 4 | Postman 전체 흐름 검증 | [ ] |
-| 5 | JWT 확장 (선택) | [ ] |
+| A | Spring 기초 실험 (DI, 계층 구조, MyBatis 흐름) | [x] |
+| 1 | 회원가입 API (BCrypt) | [x] |
+| 2 | 로그인 / 로그아웃 (HttpSession) | [x] |
+| 3 | 인터셉터 인증 + role 인가 | [x] |
+| 4 | Postman 전체 흐름 검증 | [x] |
+| 5 | JWT Access Token | [x] |
+| 6 | Refresh Token (재발급 / 로그아웃) | [~] 핵심 검증 완료 |
 
-**현재 위치**: Step A — Spring 기초 실험 진행 중
+**현재 위치**: Step 6 — Refresh Token 핵심 시나리오 완료 (로테이션/로그아웃 추가 검증 권장)
+
+### Step 6 세부 체크
+
+- [x] 로그인 응답에 `accessToken` + `refreshToken`
+- [x] Access로 `/api/members/me` → 200
+- [x] Access 만료 후 `/me` → 401
+- [x] `POST /api/auth/refresh`로 새 Access 발급
+- [ ] 예전 refresh로 재호출 → 실패 (로테이션)
+- [ ] `POST /api/auth/logout` 후 해당 refresh 재사용 불가
 
 ---
 
@@ -537,9 +548,9 @@ if (!"ADMIN".equals(role)) {
 
 ---
 
-## Step 5. JWT 확장 (선택, 2차 연습)
+## Step 5. JWT Access Token (2차 연습)
 
-세션 버전이 완벽히 동작한 뒤 진행.
+세션 버전이 완벽히 동작한 뒤 진행. → **완료**
 
 ### 세션 vs JWT 비교
 
@@ -547,19 +558,66 @@ if (!"ADMIN".equals(role)) {
 |--|------|-----|
 | 상태 저장 | 서버 (메모리/Redis) | 클라이언트 (토큰) |
 | 확장성 | 서버 여러 대면 세션 공유 필요 | Stateless, 확장 쉬움 |
-| 로그아웃 | 세션 삭제로 즉시 무효화 | 만료 전까지 유효 (블랙리스트 필요) |
+| 로그아웃 | 세션 삭제로 즉시 무효화 | Access만 있으면 만료 전까지 유효 |
 | 구현 난이도 | 쉬움 | 중간 (만료, 재발급 직접 관리) |
 
-### 추가할 것
+### 구현 포인트
 
-- `jjwt` 의존성
-- 로그인 성공 시 Access Token 발급
-- `JwtAuthInterceptor` 또는 Filter
-- Request Header: `Authorization: Bearer {token}`
+- `jjwt` 의존성 + `JwtProvider`
+- 로그인 성공 시 Access Token 발급 (`LoginResponse`)
+- `LoginCheckInterceptor`에서 `Authorization: Bearer {token}` 검증
+- role은 JWT claim 스냅샷 → DB role 변경 후 **재로그인/재발급**해야 반영
+
+### Step 5 완료 체크
+
+- [x] 로그인 Body에 `accessToken`
+- [x] Bearer로 `/me` → 200
+- [x] Header 없이 `/me` → 401
+- [x] ADMIN Bearer로 `/admin/ping` → 200
+- [x] DB role만 바꾸고 예전 토큰 → 권한 미반영 (재로그인 후 반영) 확인
 
 ---
 
-## 전체 흐름도
+## Step 6. Refresh Token (3차 연습)
+
+Access만으로는 만료 시 재로그인·서버 측 로그아웃이 어렵기 때문에 Refresh를 DB에 둡니다.
+
+```
+Access  = 짧게, API용 JWT (서버에 안 저장)
+Refresh = 길게, UUID를 DB(refresh_token)에 저장 → 재발급/로그아웃
+```
+
+### 구현 요약
+
+- 테이블: `refresh_token` (member_id, token, expires_at)
+- 로그인: `accessToken` + `refreshToken` 응답, refresh는 DB insert
+- `POST /api/auth/refresh`: DB 조회 → 유효하면 새 Access(+ 로테이션 시 새 Refresh)
+- `POST /api/auth/logout`: DB에서 refresh 삭제
+- 인터셉터 제외: `/api/auth/refresh`, `/api/auth/logout`
+- `@Value("${jwt.refresh-expiration-ms}")` — `jwt.` 접두사 주의
+
+### Postman 시나리오
+
+```
+1. POST /api/auth/login          → access + refresh
+2. GET  /api/members/me          → Bearer access → 200
+3. Access 만료 후 /me            → 401
+4. POST /api/auth/refresh        → 새 access (+ 새 refresh)
+5. 예전 refresh로 /refresh       → 실패 (로테이션)
+6. POST /api/auth/logout         → refresh 삭제
+7. 로그아웃한 refresh로 /refresh → 실패
+```
+
+### Step 6 완료 체크
+
+- [x] 로그인에 access + refresh
+- [x] 만료 Access → 401
+- [x] refresh로 재발급 성공
+- [ ] 로테이션 / 로그아웃 추가 검증
+
+---
+
+## 전체 흐름도 (세션 1차)
 
 ```mermaid
 flowchart TD
@@ -598,20 +656,27 @@ flowchart TD
 
 ---
 
-## Definition of Done (1차 목표)
+## Definition of Done (1차 목표 — 세션)
 
-- [ ] 회원가입이 된다
-- [ ] 비밀번호가 BCrypt 해시로 저장된다
-- [ ] 로그인 성공 시 HttpSession이 생성된다
-- [ ] 로그인하지 않으면 보호 API가 **401**을 반환한다
-- [ ] 일반 USER가 관리자 API 호출 시 **403**을 반환한다
-- [ ] 로그아웃 후 보호 API 재호출 시 다시 **401**이 반환된다
+- [x] 회원가입이 된다
+- [x] 비밀번호가 BCrypt 해시로 저장된다
+- [x] 로그인 성공 시 HttpSession이 생성된다
+- [x] 로그인하지 않으면 보호 API가 **401**을 반환한다
+- [x] 일반 USER가 관리자 API 호출 시 **403**을 반환한다
+- [x] 로그아웃 후 보호 API 재호출 시 다시 **401**이 반환된다
+
+## Definition of Done (2~3차 — JWT)
+
+- [x] Access Token 발급 및 Bearer 인증
+- [x] JWT claim 기반 인가 (role 스냅샷 이해)
+- [x] Access 만료 후 Refresh로 재발급
+- [ ] Refresh 로테이션 / 로그아웃으로 서버 측 무효화 확인
 
 ---
 
-## 이후 확장 (1차 완료 후)
+## 이후 확장
 
-- [ ] Refresh Token
+- [x] Refresh Token (Step 6 — 핵심 완료, 로테이션/로그아웃 추가 검증 권장)
 - [ ] 비밀번호 변경
 - [ ] Remember-me / 자동 로그인
 - [ ] Spring Security로 리팩터링
