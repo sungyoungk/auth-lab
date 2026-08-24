@@ -95,5 +95,25 @@ public class MemberService {
         refreshTokenMapper.deleteByToken(request.getRefreshToken());
     }
 
+    public void changePassword(Long memberId, ChangePasswordRequest request) {
+        String savedPassword = memberMapper.findPasswordById(memberId);
+        if(savedPassword == null) {
+            throw new IllegalArgumentException("회원을 찾을 수 없습니다");
+        }
+
+        if(!passwordEncoder.matches(request.getCurrentPassword(), savedPassword)) {
+            throw new IllegalArgumentException("현재 비밀번호가 올바르지 않습니다.");
+        }
+
+        if(request.getCurrentPassword().equals(request.getNewPassword())) {
+            throw new IllegalArgumentException("새 비밀번호가 현재 비밀번호와 같습니다.");
+        }
+
+        String encoded = passwordEncoder.encode(request.getNewPassword());
+        memberMapper.updatePassword(memberId, encoded);
+
+        // 기존 refresh token 전부 삭제: 다시 로그인 하도록 유도
+        refreshTokenMapper.deleteByMemberId(memberId);
+    }
 
 }

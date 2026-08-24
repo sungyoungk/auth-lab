@@ -22,4 +22,16 @@
         VALUES (#{loginId}, #{password}, #{name}, #{role})
     </insert>
 
+    <select id="findPasswordById" resultType="string">
+        SELECT password
+        FROM member
+        WHERE id = #{id}
+    </select>
+
+    <update id="updatePassword">
+        UPDATE member
+        SET password = #{password}
+        WHERE id = #{id}
+    </update>
+
 </mapper>

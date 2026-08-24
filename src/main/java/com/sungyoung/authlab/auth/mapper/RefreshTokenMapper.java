@@ -9,6 +9,6 @@ public interface RefreshTokenMapper {
     void insert(RefreshTokenDto refreshToken);
     RefreshTokenDto findByToken(String token);
     void deleteByToken(String token);
-    void deletedByMemberId(Long memberId);
+    void deleteByMemberId(Long memberId);
 
 }
