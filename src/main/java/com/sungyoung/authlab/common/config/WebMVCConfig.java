@@ -12,6 +12,7 @@ public class WebMVCConfig implements WebMvcConfigurer {
 
     private final LoginCheckInterceptor loginCheckInterceptor;
 
+    /*
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
 
@@ -24,5 +25,7 @@ public class WebMVCConfig implements WebMvcConfigurer {
                         "/api/auth/logout"
                 );
     }
+    */
+
 
 }
