@@ -3,8 +3,6 @@ package com.sungyoung.authlab.member.controller;
 import com.sungyoung.authlab.auth.dto.ChangePasswordRequest;
 import com.sungyoung.authlab.member.dto.MemberDto;
 import com.sungyoung.authlab.member.service.MemberService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -23,7 +21,7 @@ public class MemberController {
 
 
     @GetMapping("/api/members/me")
-    public MemberDto me(HttpServletRequest request) {
+    public MemberDto me() {
 //        Long memberId = (Long)request.getAttribute("memberId");
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
@@ -32,10 +30,7 @@ public class MemberController {
     }
 
     @PostMapping("/api/members/me/password")
-    public void changePassword(
-            HttpServletRequest request,
-            @Valid @RequestBody ChangePasswordRequest body
-            ) {
+    public void changePassword(@Valid @RequestBody ChangePasswordRequest body) {
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
         Long memberId = (Long) authentication.getPrincipal();
