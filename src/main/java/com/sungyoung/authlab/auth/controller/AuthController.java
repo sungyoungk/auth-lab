@@ -35,12 +35,7 @@ public class AuthController {
     }
 */
     @GetMapping("/api/admin/ping") // 인가
-    public String ping(HttpServletRequest request, HttpServletResponse response) {
-        String role = (String)request.getAttribute("role");
-        if(!"ADMIN".equals(role)) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN); //403
-            return null;
-        }
+    public String ping() {
         return "pong";
     }
 

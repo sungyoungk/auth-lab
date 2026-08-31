@@ -7,6 +7,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,7 +24,10 @@ public class MemberController {
 
     @GetMapping("/api/members/me")
     public MemberDto me(HttpServletRequest request) {
-        Long memberId = (Long)request.getAttribute("memberId");
+//        Long memberId = (Long)request.getAttribute("memberId");
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+        Long memberId = (Long) authentication.getPrincipal();
         return memberService.findById(memberId);
     }
 
@@ -31,7 +36,11 @@ public class MemberController {
             HttpServletRequest request,
             @Valid @RequestBody ChangePasswordRequest body
             ) {
-        Long memberId = (Long)request.getAttribute("memberId");
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+        Long memberId = (Long) authentication.getPrincipal();
+
+//        Long memberId = (Long)request.getAttribute("memberId");
         memberService.changePassword(memberId, body);
     }
 
