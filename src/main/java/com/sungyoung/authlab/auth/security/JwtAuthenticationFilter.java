@@ -51,8 +51,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             // 기존 코드 호환용 (나중에 지워도 됨)
-            request.setAttribute("memberId", memberId);
-            request.setAttribute("role", role);
+//            request.setAttribute("memberId", memberId);
+//            request.setAttribute("role", role);
         } catch (Exception e) {
             SecurityContextHolder.clearContext();
         }
